@@ -210,6 +210,9 @@ window.onload = function () {
         }
         else {
             console.log(score + " tests passed.");
+            const endTime = performance.now()
+            const timeElapsed = endTime - startTime
+            console.log("Time Elapsed (ms): " + timeElapsed)
         }
     };
 
@@ -217,4 +220,5 @@ window.onload = function () {
     window.setTimeout(testGame, 1, gb);
 
     console.log("Window loaded.");
+    const startTime = performance.now()
 };

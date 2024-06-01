@@ -1,80 +1,84 @@
 // Tic Tac Toe
 class Agent {
-    constructor() {
+    constructor() {}
 
-    }
+    // 8 1 6
+    // 3 5 7
+    // 4 9 2
 
-    minimax(board, isMaximizing) {
-        // Base cases - check if the game is over or a draw
-        var gameOver = board.gameOver();
-        if (gameOver === 1) {
-            return 1; // X wins
-        } else if (gameOver === 2) {
-            return -1; // O wins
-        } else if (gameOver === 3) {
-            return 0; // the game is a draw
+    // Basic minimax approach: ~3075ms
+    // Naively moving for first winning state found: ~2750ms
+    // Alpha-Beta Pruning: ~2650ms
+
+    minimax(board, isMax, alpha, beta) {
+
+        switch(board.gameOver()) {
+            case 1:
+                return 1
+            case 2:
+                return -1
+            case 3:
+                return 0
         }
 
-        // Recursive case - evaluate all possible moves and choose the best score
-        if (isMaximizing) {
-            var bestScore = -Infinity;
-            for (var i = 0; i < board.cells.length; i++) {
-                var cell = i + 1;
-                if (board.cellFree(cell)) {
-                    var newBoard = board.clone();
-                    newBoard.move(cell);
-                    var score = this.minimax(newBoard, false);
-                    bestScore = Math.max(bestScore, score);
+        let currentBest = 0
+        if (isMax) {
+            currentBest = alpha
+            // iterates through moves until it finds a winning game
+            for (let i = 1; i <= board.cells.length && alpha < beta; i++) {
+                if (board.cellFree(i)) {
+                    let nextBoard = board.clone()
+                    nextBoard.move(i)
+                    let testScore = this.minimax(nextBoard, 0, alpha, beta)
+                    currentBest = testScore > currentBest ? testScore : currentBest
+                    alpha = alpha > currentBest ? alpha : currentBest
                 }
             }
-            return bestScore;
         } else {
-            var bestScore = Infinity;
-            for (var i = 0; i < board.cells.length; i++) {
-                var cell = i + 1;
-                if (board.cellFree(cell)) {
-                    var newBoard = board.clone();
-                    newBoard.move(cell);
-                    var score = this.minimax(newBoard, true);
-                    bestScore = Math.min(bestScore, score);
+            currentBest = beta
+            // iterates through moves until it finds a winning game
+            for (let i = 1; i <= board.cells.length && alpha < beta; i++) {
+                if (board.cellFree(i)) {
+                    let nextBoard = board.clone()
+                    nextBoard.move(i)
+                    let testScore = this.minimax(nextBoard, 1, alpha, beta)
+                    currentBest = testScore < currentBest ? testScore : currentBest
+                    beta = beta < currentBest ? beta : currentBest
                 }
             }
-            return bestScore;
         }
+
+        return currentBest
     }
 
     selectMove(board) {
-        // Define the initial best score and move
-        var maxScore = -Infinity;
-        var maxMove = null;
+        let max = Number.MIN_SAFE_INTEGER
+        let min = Number.MAX_SAFE_INTEGER
 
-        var minScore = Infinity;
-        var minMove = null;
+        let maxMove = null
+        let minMove = null
 
-        // Loop through each cell to evaluate the best move
-        for (var i = 0; i < board.cells.length; i++) {
-            var cell = i + 1;
-            if (board.cellFree(cell)) {
-                // Make a move on the current cell
-                var newBoard = board.clone();
-                newBoard.move(cell);
+        for (let i = 1; i <= board.cells.length; i++) {
+            if (board.cellFree(i)) {
+                let nextBoard = board.clone()
+                nextBoard.move(i)
+                let testScore = this.minimax(nextBoard, !board.playerOne, Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)
 
-                // Calculate the score for the current move
-                var score = this.minimax(newBoard, !board.playerOne);
-
-                // Update the best move if the current move has a higher score
-                if (score > maxScore) {
-                    maxScore = score;
-                    maxMove = cell;
+                if (testScore > max) {
+                    max = testScore
+                    maxMove = i
                 }
-                if (score < minScore) {
-                    minScore = score;
-                    minMove = cell;
+
+                if (testScore < min) {
+                    min = testScore
+                    minMove = i
                 }
+
+                min = testScore < min ? testScore : min
             }
         }
 
-        return board.playerOne ? maxMove : minMove;
+        return board.playerOne ? maxMove : minMove
     }
 
 }
